@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Fraunces } from "next/font/google";
 import "./globals.css";
-import { CartProvider } from "@/components/CartContext";
-import { AnnouncementBar } from "@/components/AnnouncementBar";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { ToastProvider } from "@/components/ui";
+import { t } from "@/lib/i18n/t";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,27 +16,16 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Tarf — Smart products for better everyday living",
-  description:
-    "Carefully selected, clearly explained, confidently purchased. Discover curated tech, workspace and home essentials from Tarf.",
-  openGraph: {
-    title: "Tarf — Smart products for better everyday living",
-    description:
-      "Curated everyday products, clearly explained. Shop Tarf for tech, workspace and home essentials.",
-    type: "website",
-  },
+  title: { default: "Tarf — B2B sourcing marketplace", template: "%s | Tarf" },
+  description: "Discover verified suppliers and manufacturers, send inquiries and source with protected payments.",
+  applicationName: t("brand.name"),
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${geistSans.variable} ${fraunces.variable}`}>
       <body className="min-h-screen flex flex-col">
-        <CartProvider>
-          <AnnouncementBar />
-          <Header />
-          <main id="main" className="flex-1">{children}</main>
-          <Footer />
-        </CartProvider>
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );

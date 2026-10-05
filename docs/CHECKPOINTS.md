@@ -10,7 +10,7 @@ Legend: **Scope** = what is built. **Done when** = acceptance criteria. **Not in
 - **Delivered:** branch `b2b-rebuild`, tag `b2c-final`, `docs/{ARCHITECTURE,DATA_MODEL,CHECKPOINTS,REPO_AUDIT}.md`, `prisma/schema.prisma` (53 models, 36 enums), `prisma.config.ts`, `prisma/seed.ts` stub, `.env.example`.
 - **Done when:** existing app builds + lints on the branch; `prisma validate` passes; approval received.
 
-## CP-1 — Foundation
+## CP-1 — Foundation  *(done — see git log on `b2b-rebuild`)*
 **Scope**
 - Restructure to route groups + `src/modules` + `src/lib` per ARCHITECTURE §2–3; remove B2C routes/components approved for deletion (REPO_AUDIT).
 - Design system: tokens (adapt current palette), `components/ui` primitives (Button, Input, Select, Badge, Card, Modal, Tabs, Table, Pagination, Toast, EmptyState, Skeleton), responsive layout shells for public / dashboard / admin.
