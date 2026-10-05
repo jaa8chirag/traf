@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { getMenuTree } from "@/modules/catalog";
 import { AccountLinks } from "./AccountLinks";
+import { CategoryMenu } from "./CategoryMenu";
 
 const links = [
   { href: "/suppliers", label: "Suppliers" },
@@ -10,8 +11,8 @@ const links = [
 ];
 
 /**
- * Header with a no-JS category menu: <details> panels render every L1/L2 link in the HTML
- * (crawlable) and work with keyboard and touch. Search submits to /search?q=.
+ * Header. The category menu (CategoryMenu) renders every L1/L2 link in the HTML (crawlable)
+ * and closes on outside click, Esc, link click or navigation. Search submits to /search?q=.
  */
 export async function SiteHeader() {
   const menu = await getMenuTree();
@@ -25,30 +26,7 @@ export async function SiteHeader() {
           <Logo />
         </Link>
 
-        <details className="group relative">
-          <summary className="flex h-10 cursor-pointer list-none items-center gap-2 rounded-full border border-line px-4 text-sm font-medium hover:bg-paper-2">
-            <span aria-hidden>☰</span> <span className="hidden sm:inline">Categories</span>
-          </summary>
-          <div className="fixed inset-x-0 top-16 max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-line bg-white shadow-xl">
-            <div className="mx-auto grid max-w-7xl gap-x-8 gap-y-6 px-4 py-6 sm:grid-cols-2 lg:grid-cols-4">
-              {menu.map((c) => (
-                <div key={c.id}>
-                  <Link href={`/c/${c.path}`} className="text-sm font-semibold hover:underline">{c.name}</Link>
-                  <ul className="mt-1.5 space-y-1 text-sm text-muted">
-                    {c.children.slice(0, 5).map((s) => (
-                      <li key={s.id}><Link href={`/c/${s.path}`} className="hover:text-ink hover:underline">{s.name}</Link></li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-            <div className="border-t border-line bg-paper py-3 text-center text-sm">
-              <Link href="/categories" className="font-medium underline">View all categories</Link>
-              <span className="mx-3 text-muted">·</span>
-              <Link href="/a-z" className="font-medium underline">A–Z index</Link>
-            </div>
-          </div>
-        </details>
+        <CategoryMenu menu={menu} />
 
         <form action="/search" role="search" className="mx-auto hidden min-w-0 max-w-xl flex-1 md:flex">
           <label htmlFor="site-q" className="sr-only">Search products</label>
