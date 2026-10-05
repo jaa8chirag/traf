@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tarf — B2B sourcing marketplace
 
-## Getting Started
+Next.js 16 (App Router) · TypeScript · Tailwind v4 · PostgreSQL + Prisma 7 · Redis · Meilisearch.
+Design docs live in [`docs/`](docs): [ARCHITECTURE](docs/ARCHITECTURE.md), [DATA_MODEL](docs/DATA_MODEL.md), [CHECKPOINTS](docs/CHECKPOINTS.md), [REPO_AUDIT](docs/REPO_AUDIT.md).
 
-First, run the development server:
+> This version of Next.js has breaking changes (e.g. `middleware` is now `proxy`). See `AGENTS.md`.
+
+## Quick start
 
 ```bash
+cp .env.example .env            # and .env.local; set AUTH_SECRET to a random 32+ char string
+docker compose up -d            # Postgres :5433, Redis :6380, Meilisearch :7700, MinIO :9000, Mailpit :8025
+npm install                     # also runs `prisma generate`
+npm run db:migrate              # apply migrations
+npm run db:seed                 # categories, plans, roles/permissions, demo suppliers, buyer, super-admin
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Sign-in is email + one-time code. In development the code arrives in **Mailpit** at http://localhost:8025.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Who | Where | Email |
+|---|---|---|
+| Super-admin | `/admin/login` | `admin@tarf.test` (`SEED_ADMIN_EMAIL`) |
+| Demo buyer | `/login` | `buyer@demo.tarf.test` |
+| Demo supplier | `/login` (then `/supplier/dashboard`) | `sunrise@demo.tarf.test` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Google sign-in is enabled when `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are set.
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Command | What it does |
+|---|---|
+| `npm run dev` / `build` / `start` | Next.js |
+| `npm run lint` · `npm run typecheck` | ESLint (incl. module-boundary rules) · `tsc --noEmit` |
+| `npm test` | Vitest (unit + DB integration; needs the compose Postgres, migrated and seeded) |
+| `npm run db:migrate` / `db:seed` / `db:studio` / `db:validate` | Prisma |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Layout
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/app/(auth) (buyer) (supplier) (admin)   route groups, one shell per panel
+src/modules/<name>/index.ts                 module public API — import only via the index
+src/lib/                                    db, env, i18n t(), tenant resolver, providers/*
+src/components/ui                           design-system primitives
+src/proxy.ts                                showroom tenant rewrite + optimistic auth redirect
+prisma/                                     schema, migrations, seed
+```
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Rules: UI never imports Prisma; modules are imported only through their index (enforced by ESLint).

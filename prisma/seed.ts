@@ -82,6 +82,30 @@ async function seedAccess(): Promise<{ superAdminRoleId: string; ownerRoleId: st
     const row = await prisma.role.upsert({ where: { key: r.key }, update: {}, create: { ...r, isSystem: true } });
     out.set(r.key, row.id);
   }
+  const grants: Record<string, string[]> = {
+    super_admin: ["admin.access", "supplier.verify", "product.moderate", "rfq.review", "review.moderate", "order.view", "order.release_escrow", "dispute.resolve", "plan.manage", "report.view", "cms.publish", "support.reply", "staff.manage"],
+    verification: ["admin.access", "supplier.verify", "product.moderate", "rfq.review", "review.moderate"],
+    finance: ["admin.access", "order.view", "order.release_escrow", "dispute.resolve", "plan.manage", "report.view"],
+    support: ["admin.access", "support.reply", "order.view"],
+    content: ["admin.access", "cms.publish", "product.moderate"],
+    supplier_owner: ["company.manage", "product.manage", "inquiry.reply", "order.manage", "team.manage", "billing.manage"],
+    supplier_sales: ["inquiry.reply", "order.manage"],
+    supplier_product_manager: ["product.manage"],
+  };
+  const permissionIds = new Map<string, string>();
+  for (const key of new Set(Object.values(grants).flat())) {
+    const p = await prisma.permission.upsert({ where: { key }, update: {}, create: { key } });
+    permissionIds.set(key, p.id);
+  }
+  for (const [roleKey, keys] of Object.entries(grants)) {
+    for (const key of keys) {
+      await prisma.rolePermission.upsert({
+        where: { roleId_permissionId: { roleId: out.get(roleKey)!, permissionId: permissionIds.get(key)! } },
+        update: {},
+        create: { roleId: out.get(roleKey)!, permissionId: permissionIds.get(key)! },
+      });
+    }
+  }
   return { superAdminRoleId: out.get("super_admin")!, ownerRoleId: out.get("supplier_owner")! };
 }
 

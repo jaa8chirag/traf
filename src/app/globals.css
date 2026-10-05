@@ -13,6 +13,14 @@
   --sand: #ecdfc8;
   --sky: #d9e4ea;
   --blush: #efd9d0;
+  --success: #1f7a4d;
+  --success-bg: #dff1e6;
+  --warning: #9a6200;
+  --warning-bg: #fbeccb;
+  --danger: #b3261e;
+  --danger-bg: #f9dedc;
+  --info: #1d5f8a;
+  --info-bg: #dbeaf5;
 }
 
 @theme inline {
@@ -28,6 +36,14 @@
   --color-sand: var(--sand);
   --color-sky: var(--sky);
   --color-blush: var(--blush);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-display: var(--font-fraunces), Georgia, serif;
 }
