@@ -31,6 +31,7 @@ let cached: Env | undefined;
 
 /** Server-only env, validated on first use so `next build` does not need secrets. */
 export function env(): Env {
-  cached ??= schema.parse(process.env);
+  // `FOO=` in a .env file means "unset", not the empty string.
+  cached ??= schema.parse(Object.fromEntries(Object.entries(process.env).filter(([, v]) => v !== "")));
   return cached;
 }

@@ -37,6 +37,12 @@ npm run taxonomy:import -- tree.csv --prune     # apply; --prune retires categor
 CSV columns `l1,l2,l3,l4` (names; optional translations as `l1_hi`, `l2_zh`, …) or a nested JSON `[{ "name", "nameI18n", "children": [] }]`.
 The importer is idempotent, keyed by the slug path, and disambiguates repeated names (e.g. several "Others") by prefixing the parent.
 
+## Public site notes
+
+- Public pages are server-rendered and ISR-cached (`revalidate` 5–10 min). **`next build` queries the database** (home, directory, A–Z, sitemap are prerendered), so Postgres must be reachable during the build.
+- Set `NEXT_PUBLIC_APP_URL` to the real origin before building: it feeds canonical URLs, Open Graph, JSON-LD and the sitemap (it is inlined at build time).
+- Sitemaps are sharded at `/sitemap/{id}.xml` (listed in `robots.txt`). Banners and CMS pages (help / legal / blog) are data: see `Banner` and `CmsPage`; seed content is placeholder text that needs real copy and legal review.
+
 ## Scripts
 
 | Command | What it does |

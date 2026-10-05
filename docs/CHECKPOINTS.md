@@ -30,7 +30,7 @@ Legend: **Scope** = what is built. **Done when** = acceptance criteria. **Not in
 **Done when:** a supplier completes onboarding → admin verifies → supplier lists a product with category-specific specs → admin approves → product row is `LIVE`; importer round-trips a 6,000-leaf fixture in < 60 s; attribute validation rejects bad values server-side.
 **Not in scope:** memberships (everyone is Free), search index, showroom.
 
-## CP-3 — Public website
+## CP-3 — Public website  *(done)*
 **Scope**
 - Home (category mega-menu, banners from `Banner`, recommended products/suppliers, secured-trading strip), category directory, category page (sub-category nav, listing, breadcrumbs), product detail (gallery, tiers, specs, supplier card, related, JSON-LD), supplier list, static/legal/help/blog from `CmsPage`.
 - SEO basics: `generateMetadata`, canonical, `sitemap.ts` (sharded), `robots.ts`, JSON-LD `Product/Organization/BreadcrumbList`, A–Z index pages, 404 handling.

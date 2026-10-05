@@ -243,6 +243,107 @@ async function seedDemo(cats: Map<string, string>, plans: Map<PlanTier, string>,
   });
 }
 
+
+const cmsPages: Array<{ type: "LEGAL" | "HELP" | "BLOG"; slug: string; title: string; seoDesc: string; body: string }> = [
+  { type: "LEGAL", slug: "terms", title: "Terms of use", seoDesc: "The terms that govern your use of Tarf.", body: `## About these terms
+
+These terms apply to everyone who uses Tarf as a buyer, supplier or visitor. **This is a starter template and must be reviewed by counsel before launch.**
+
+## Accounts
+
+- You are responsible for activity on your account.
+- Information you provide must be accurate.
+
+## Marketplace role
+
+Tarf connects buyers and suppliers. Contracts are made between buyer and supplier, except for orders placed through Secured Trading, where Tarf holds payment in escrow under the Secured Trading rules.` },
+  { type: "LEGAL", slug: "privacy", title: "Privacy policy", seoDesc: "How Tarf collects and uses personal data.", body: `## What we collect
+
+Account details, company information, messages and order records. **This is a starter template and must be reviewed by counsel before launch.**
+
+## How we use it
+
+- To operate the marketplace and verify suppliers.
+- To prevent fraud and resolve disputes.
+
+## Your choices
+
+Contact [support](/help) to access or delete your data.` },
+  { type: "HELP", slug: "how-to-buy", title: "How to buy on Tarf", seoDesc: "Find suppliers, compare offers and order safely.", body: `## 1. Find products
+
+Browse [categories](/categories) or search by keyword. Compare price ranges and minimum order quantities.
+
+## 2. Check the supplier
+
+Look for the **Verified**, **Audited**, Gold and Diamond badges.
+
+## 3. Send an inquiry
+
+Create a free account, then message the supplier with your requirements.
+
+## 4. Order safely
+
+Use [Secured Trading](/secured-trading) to pay into escrow.` },
+  { type: "HELP", slug: "how-to-sell", title: "How to sell on Tarf", seoDesc: "Register, get verified and list products.", body: `## 1. Register
+
+[Create a supplier account](/register?as=supplier).
+
+## 2. Complete your company profile
+
+Add company details and upload your business licence.
+
+## 3. Get verified
+
+Our team reviews documents, usually within 1–2 business days.
+
+## 4. List products
+
+Choose a category, fill in the specifications, add photos and price tiers, and submit for review.` },
+  { type: "HELP", slug: "secured-trading", title: "How Secured Trading works", seoDesc: "Escrow-protected payments explained.", body: `## Escrow in four steps
+
+- You place an order and pay into escrow.
+- The supplier produces and ships.
+- You confirm receipt.
+- Funds are released to the supplier.
+
+If something goes wrong you can open a dispute before release.` },
+  { type: "BLOG", slug: "how-to-vet-a-supplier", title: "How to vet a supplier before your first order", seoDesc: "A practical checklist for evaluating overseas manufacturers.", body: `## Start with verification
+
+Check that the company is **Verified** and, where possible, **Audited**.
+
+## Ask for the right documents
+
+- Business licence and tax registration
+- Quality certificates relevant to your market
+- Recent export references
+
+## Order a sample first
+
+Samples reveal quality and communication. Use [Secured Trading](/secured-trading) for the larger order.` },
+];
+
+async function seedContent(): Promise<void> {
+  for (const [i, p] of cmsPages.entries()) {
+    await prisma.cmsPage.upsert({
+      where: { type_slug_locale: { type: p.type, slug: p.slug, locale: "en" } },
+      update: {},
+      create: { ...p, locale: "en", published: true, publishedAt: new Date(Date.now() - i * 86_400_000) },
+    });
+  }
+  if ((await prisma.banner.count()) === 0) {
+    await prisma.banner.createMany({
+      data: [
+        { placement: "HOME_HERO", title: "Source directly from verified manufacturers", imageUrl: "/banners/hero-1.svg", linkUrl: "/categories", sortOrder: 0 },
+        { placement: "HOME_HERO", title: "Secured Trading", imageUrl: "/banners/promo-1.svg", linkUrl: "/secured-trading", sortOrder: 1 },
+        { placement: "HOME_HERO", title: "Audited suppliers", imageUrl: "/banners/promo-2.svg", linkUrl: "/suppliers", sortOrder: 2 },
+      ],
+    });
+  }
+  // A few ratings/tags so cards and structured data have something to show.
+  await prisma.product.updateMany({ where: { slug: { contains: "65w-gan" } }, data: { ratingAvg: 4.8, ratingCount: 42, topTag: "Top rated" } });
+  await prisma.product.updateMany({ where: { slug: { contains: "vitrified" } }, data: { ratingAvg: 4.5, ratingCount: 17 } });
+}
+
 async function seedSuperAdmin(superAdminRoleId: string): Promise<void> {
   const email = process.env.SEED_ADMIN_EMAIL ?? "admin@tarf.test";
   const user = await prisma.user.upsert({
@@ -264,6 +365,7 @@ async function main(): Promise<void> {
   const plans = await seedPlansAndBadges();
   await seedDemo(cats, plans, ownerRoleId);
   await seedSuperAdmin(superAdminRoleId);
+  await seedContent();
   console.log(`Seeded ${cats.size} categories, 3 suppliers, ${products.length} products, 1 buyer, 1 super-admin.`);
 }
 
