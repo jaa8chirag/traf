@@ -38,7 +38,7 @@ Legend: **Scope** = what is built. **Done when** = acceptance criteria. **Not in
 **Done when:** Lighthouse SEO ≥ 95 and no CLS regressions on home/category/product; structured data passes the Rich Results validator on sample pages; every public page is server-rendered with real content in the HTML; mobile layout verified at 360 px.
 **Not in scope:** filters/facets, inquiry buttons (rendered, wired in CP-6).
 
-## CP-4 — Search
+## CP-4 — Search  *(done)*
 **Scope**
 - Meilisearch indexes `products`, `suppliers` (+ `secured` as a filtered view of products); indexer worker consuming `product.*`/`supplier.*` events + full reindex command.
 - Faceted filters: business type, R&D, sub-category, MOQ, price range, buy-sample, certifications, audited, member tier, province/location, **dynamic per-category attributes** from `AttributeDefinition.isFilterable`.

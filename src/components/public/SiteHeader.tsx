@@ -3,6 +3,7 @@ import { Logo } from "@/components/Logo";
 import { getMenuTree } from "@/modules/catalog";
 import { AccountLinks } from "./AccountLinks";
 import { CategoryMenu } from "./CategoryMenu";
+import { SearchBox } from "./SearchBox";
 
 const links = [
   { href: "/suppliers", label: "Suppliers" },
@@ -28,11 +29,7 @@ export async function SiteHeader() {
 
         <CategoryMenu menu={menu} />
 
-        <form action="/search" role="search" className="mx-auto hidden min-w-0 max-w-xl flex-1 md:flex">
-          <label htmlFor="site-q" className="sr-only">Search products</label>
-          <input id="site-q" name="q" type="search" placeholder="Search products or suppliers" className="h-10 min-w-0 flex-1 rounded-l-full border border-r-0 border-line bg-paper px-4 text-sm" />
-          <button type="submit" className="h-10 rounded-r-full bg-ink px-5 text-sm font-medium text-paper hover:bg-ink-2">Search</button>
-        </form>
+        <SearchBox className="mx-auto hidden min-w-0 max-w-xl flex-1 md:block" />
 
         <nav aria-label="Main" className="ml-auto flex items-center gap-1 text-sm">
           {links.map((l) => (
@@ -41,11 +38,9 @@ export async function SiteHeader() {
           <AccountLinks />
         </nav>
       </div>
-      <form action="/search" role="search" className="flex border-t border-line p-2 md:hidden">
-        <label htmlFor="site-q-m" className="sr-only">Search products</label>
-        <input id="site-q-m" name="q" type="search" placeholder="Search products" className="h-10 min-w-0 flex-1 rounded-l-full border border-r-0 border-line bg-paper px-4 text-sm" />
-        <button type="submit" className="h-10 rounded-r-full bg-ink px-5 text-sm font-medium text-paper">Search</button>
-      </form>
+      <div className="border-t border-line p-2 md:hidden">
+        <SearchBox />
+      </div>
     </header>
   );
 }

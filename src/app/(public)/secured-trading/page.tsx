@@ -1,18 +1,10 @@
 import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/public/Breadcrumbs";
-import { ProductCard } from "@/components/public/Cards";
-import { EmptyState, Pagination } from "@/components/ui";
-import { listProducts } from "@/modules/catalog";
+import { SearchView } from "@/components/search/SearchView";
+import { buildQuery, canonicalParams, isIndexable, parseSearchParams, runSearch } from "@/modules/search";
 
-export const revalidate = 300;
-
-const pageParam = (v: string | string[] | undefined): number => Math.max(1, Math.floor(Number(typeof v === "string" ? v : 1)) || 1);
-
-export const metadata: Metadata = {
-  title: "Secured Trading - escrow-protected sourcing",
-  description: "Buy from verified suppliers with escrow: your payment is held until you confirm the goods arrived as agreed.",
-  alternates: { canonical: "/secured-trading" },
-};
+const FORCED = { tab: "secured" } as const;
+const OMIT = ["tab", "cat"] as const;
 
 const steps = [
   ["Place an order", "Agree price, quantity and terms with the supplier."],
@@ -21,9 +13,20 @@ const steps = [
   ["Confirm receipt", "Funds are released only after you confirm, or open a dispute."],
 ];
 
+export async function generateMetadata({ searchParams }: PageProps<"/secured-trading">): Promise<Metadata> {
+  const params = parseSearchParams(await searchParams, FORCED);
+  const canon = buildQuery(canonicalParams({ ...params, cat: null }), OMIT);
+  return {
+    title: "Secured Trading - escrow-protected sourcing",
+    description: "Buy from verified suppliers with escrow: your payment is held until you confirm the goods arrived as agreed.",
+    alternates: { canonical: `/secured-trading${canon ? `?${canon}` : ""}` },
+    robots: isIndexable(params) ? undefined : { index: false, follow: true },
+  };
+}
+
 export default async function SecuredTradingPage({ searchParams }: PageProps<"/secured-trading">) {
-  const page = pageParam((await searchParams).page);
-  const result = await listProducts({ escrowOnly: true, page });
+  const params = parseSearchParams(await searchParams, FORCED);
+  const outcome = await runSearch(params);
   return (
     <div className="mx-auto max-w-7xl space-y-8 px-4 py-8">
       <Breadcrumbs items={[{ name: "Home", path: "/" }, { name: "Secured Trading", path: "/secured-trading" }]} />
@@ -42,12 +45,7 @@ export default async function SecuredTradingPage({ searchParams }: PageProps<"/s
       </ol>
       <section aria-labelledby="eligible" className="space-y-4">
         <h2 id="eligible" className="text-xl font-semibold">Products available with Secured Trading</h2>
-        {result.items.length === 0 ? (
-          <EmptyState title="No Secured Trading products yet" />
-        ) : (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">{result.items.map((p) => <ProductCard key={p.id} p={p} />)}</div>
-        )}
-        <Pagination page={result.page} pageCount={result.pageCount} hrefFor={(n) => `/secured-trading${n > 1 ? `?page=${n}` : ""}`} />
+        <SearchView outcome={outcome} params={params} basePath="/secured-trading" omit={OMIT} tabs={["secured"]} />
       </section>
     </div>
   );

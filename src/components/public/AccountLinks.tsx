@@ -28,7 +28,7 @@ export function AccountLinks() {
   return (
     <>
       <Link href="/login" className={buttonClass("ghost", "sm")}>Sign in</Link>
-      <Link href="/register?as=supplier" className={buttonClass("secondary", "sm", "hidden sm:inline-flex")}>Sell on Tarf</Link>
+      <Link href="/register?as=supplier" className={buttonClass("secondary", "sm", "max-sm:hidden")}>Sell on Tarf</Link>
       <Link href="/register" className={buttonClass("primary", "sm")}>Join free</Link>
     </>
   );

@@ -119,3 +119,11 @@ body {
   .marquee, .floaty { animation: none; }
   * { transition-duration: 0.01ms !important; }
 }
+
+/* Filters sidebar: collapsible <details> on mobile, always open on desktop. */
+@media (min-width: 1024px) {
+  details.filters::details-content {
+    content-visibility: visible;
+    display: block;
+  }
+}

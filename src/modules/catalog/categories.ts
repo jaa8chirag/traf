@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/db";
 import { audit } from "@/lib/events/audit";
+import { emit } from "@/lib/events/outbox";
 import { fail, ok, type Result } from "@/lib/result";
 import { can, type CurrentSession } from "@/modules/identity";
 import { mergeDefinitions, type AttrDef, type AttributeKind } from "./attributes";
@@ -46,6 +47,7 @@ function toDef(d: {
   unit: string | null;
   options: unknown;
   isRequired: boolean;
+  isFilterable: boolean;
 }): AttrDef {
   return {
     id: d.id,
@@ -55,6 +57,7 @@ function toDef(d: {
     unit: d.unit,
     options: Array.isArray(d.options) ? (d.options as AttrDef["options"]) : null,
     isRequired: d.isRequired,
+    isFilterable: d.isFilterable,
   };
 }
 
@@ -133,6 +136,7 @@ export async function saveAttribute(session: CurrentSession, categoryId: string,
       create: { categoryId, key: v.key, ...data },
     });
     await audit(tx, { actorId: session.user.id, action: "attribute.saved", entityType: "Category", entityId: categoryId, after: { key: v.key, type: v.type } });
+    await emit(tx, "attribute.changed", categoryId, { key: v.key, filterable: v.isFilterable });
   });
   return ok(undefined);
 }
@@ -145,6 +149,7 @@ export async function deleteAttribute(session: CurrentSession, attributeId: stri
   await prisma.$transaction(async (tx) => {
     await tx.attributeDefinition.delete({ where: { id: attributeId } });
     await audit(tx, { actorId: session.user.id, action: "attribute.deleted", entityType: "Category", entityId: def.categoryId, before: { key: def.key } });
+    await emit(tx, "attribute.changed", def.categoryId, { key: def.key, deleted: true });
   });
   return ok(undefined);
 }

@@ -37,6 +37,7 @@ const eslintConfig = defineConfig([
   },
   globalIgnores([
     "src/generated/**",
+    "workers/*.cjs",
     // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",

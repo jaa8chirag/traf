@@ -15,8 +15,9 @@ const nextConfig: NextConfig = {
         pathname: `${origin.pathname.replace(/\/$/, "")}/**`,
       },
     ],
-    // Local MinIO resolves to a private address, which the optimizer blocks by default.
-    dangerouslyAllowLocalIP: process.env.NODE_ENV !== "production",
+    // The optimizer refuses private addresses (SSRF protection). Allow it only when the configured
+    // image host itself is local (MinIO on localhost); real CDN/S3 hosts stay blocked from private IPs.
+    dangerouslyAllowLocalIP: ["localhost", "127.0.0.1"].includes(origin.hostname),
   },
 };
 

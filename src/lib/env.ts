@@ -22,6 +22,10 @@ const schema = z.object({
   S3_FORCE_PATH_STYLE: z.enum(["true", "false"]).default("true"),
   NEXT_PUBLIC_CDN_URL: z.string().optional(),
   UPLOAD_MAX_MB: z.coerce.number().positive().default(25),
+  MEILISEARCH_HOST: z.string().default("http://localhost:7700"),
+  MEILISEARCH_MASTER_KEY: z.string().default("change-me-master-key"),
+  MEILISEARCH_INDEX_PREFIX: z.string().default("tarf_dev_"),
+  REDIS_URL: z.string().default("redis://localhost:6380"),
   EMAIL_FROM: z.string().default("Tarf <no-reply@tarf.example>"),
 });
 

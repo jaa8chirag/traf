@@ -9,6 +9,7 @@ export interface AttrDef {
   unit?: string | null;
   options?: ReadonlyArray<{ value: string; label: string }> | null;
   isRequired: boolean;
+  isFilterable?: boolean;
 }
 
 export interface AttrValue {

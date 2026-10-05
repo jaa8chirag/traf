@@ -172,6 +172,8 @@ interface SearchProvider {
 
 Conventions: money is `{ amount: string (decimal), currency }` — never JS floats; every provider call that moves money takes an **idempotency key**; every external call is wrapped with timeout + retry policy in the job layer, not the provider.
 
+**Implemented in CP-4:** `SearchProvider` is now `configure / upsert / remove / query / multiQuery / rebuild` over an engine-neutral filter AST (`FilterClause`); the Meilisearch adapter compiles it. Index-time ranking = text relevance, then a precomputed `rankScore` (tier + audited + reviews). Disjunctive facet counts use extra `multiQuery` calls. Meilisearch 1.54 (the JS client requires a recent server).
+
 **Search engine choice — Meilisearch.** Faceted search over ~100k–1M products with typo tolerance and a tiny ops footprint fits Azure single-node. OpenSearch is only justified once we need geo-distance ranking at scale, per-field analyzers for CJK, or >5M docs; the `SearchProvider` interface keeps that swap contained. Dynamic per-category attributes are indexed as a flat `attrs` map; filterable attributes are registered in `filterableAttributes` by a job whenever an `AttributeDefinition` with `isFilterable` changes.
 
 ---
