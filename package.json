@@ -22,7 +22,8 @@
     "worker": "tsx --require ./workers/preload.cjs workers/main.ts",
     "search:reindex": "tsx --require ./workers/preload.cjs scripts/search-reindex.ts",
     "seed:demo": "tsx scripts/seed-demo-catalog.ts",
-    "search:bench": "tsx --require ./workers/preload.cjs scripts/search-bench.ts"
+    "search:bench": "tsx --require ./workers/preload.cjs scripts/search-bench.ts",
+    "hero:images": "tsx scripts/generate-hero-images.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1146.0",

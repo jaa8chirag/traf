@@ -67,7 +67,7 @@ Meilisearch holds two indexes (`products`, `suppliers`; the Secured Trading tab 
 | `npm test` | Vitest (unit + DB integration; needs the compose Postgres, migrated and seeded) |
 | `npm run storage:init` / `taxonomy:import` | MinIO bucket setup · category importer |
 | `npm run worker` · `search:reindex` · `search:bench` | background worker · rebuild indexes · load test |
-| `npm run seed:demo` · `seed:images` | larger demo catalogue · generated demo photos/logos |
+| `npm run seed:demo` · `seed:images` · `hero:images` | larger demo catalogue · generated demo photos/logos · home hero slide art (public/banners) |
 | `npm run db:migrate` / `db:seed` / `db:studio` / `db:validate` | Prisma |
 
 ## Layout

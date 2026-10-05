@@ -330,15 +330,16 @@ async function seedContent(): Promise<void> {
       create: { ...p, locale: "en", published: true, publishedAt: new Date(Date.now() - i * 86_400_000) },
     });
   }
-  if ((await prisma.banner.count()) === 0) {
-    await prisma.banner.createMany({
-      data: [
-        { placement: "HOME_HERO", title: "Source directly from verified manufacturers", imageUrl: "/banners/hero-1.svg", linkUrl: "/categories", sortOrder: 0 },
-        { placement: "HOME_HERO", title: "Secured Trading", imageUrl: "/banners/promo-1.svg", linkUrl: "/secured-trading", sortOrder: 1 },
-        { placement: "HOME_HERO", title: "Audited suppliers", imageUrl: "/banners/promo-2.svg", linkUrl: "/suppliers", sortOrder: 2 },
-      ],
-    });
-  }
+  // Home hero slides ("what we do"). Replaces earlier demo banners (static assets under /banners).
+  await prisma.banner.deleteMany({ where: { placement: "HOME_HERO", imageUrl: { startsWith: "/banners/" } } });
+  await prisma.banner.createMany({
+    data: [
+      { placement: "HOME_HERO", sortOrder: 0, imageUrl: "/banners/hero-sourcing.webp", title: "Source directly from verified manufacturers", subtitle: "Compare MOQs and prices across thousands of products, then message suppliers in one click.", ctaLabel: "Browse categories", linkUrl: "/categories" },
+      { placement: "HOME_HERO", sortOrder: 1, imageUrl: "/banners/hero-secured.webp", title: "Pay safely with Secured Trading", subtitle: "Your payment is held in escrow and released only after you confirm the goods arrived.", ctaLabel: "How escrow works", linkUrl: "/secured-trading" },
+      { placement: "HOME_HERO", sortOrder: 2, imageUrl: "/banners/hero-audited.webp", title: "Work with audited, trusted suppliers", subtitle: "Verified documents and third-party factory audits, with Gold and Diamond member badges.", ctaLabel: "Find suppliers", linkUrl: "/suppliers?audited=1" },
+      { placement: "HOME_HERO", sortOrder: 3, imageUrl: "/banners/hero-global.webp", title: "Sell your products worldwide", subtitle: "List products, receive inquiries from global buyers and grow with Tarf membership.", ctaLabel: "Start selling", linkUrl: "/register?as=supplier" },
+    ],
+  });
   // A few ratings/tags so cards and structured data have something to show.
   await prisma.product.updateMany({ where: { slug: { contains: "65w-gan" } }, data: { ratingAvg: 4.8, ratingCount: 42, topTag: "Top rated" } });
   await prisma.product.updateMany({ where: { slug: { contains: "vitrified" } }, data: { ratingAvg: 4.5, ratingCount: 17 } });

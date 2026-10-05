@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { ProductCard, SupplierCard } from "@/components/public/Cards";
-import { ButtonLink } from "@/components/ui";
+import { HeroSlider, type HeroSlide } from "@/components/public/HeroSlider";
 import { absoluteUrl, siteUrl } from "@/lib/seo";
 import { getMenuTree, listFeaturedSuppliers, listProducts, listRecommendedProducts } from "@/modules/catalog";
 import { listBanners } from "@/modules/cms";
@@ -23,7 +23,17 @@ export default async function HomePage() {
     listFeaturedSuppliers(6),
     listProducts({ escrowOnly: true, pageSize: 4 }),
   ]);
-  const [hero, ...rest] = banners;
+  const slides: HeroSlide[] = banners.map((b) => ({
+    id: b.id,
+    title: b.title ?? "Source directly from verified manufacturers",
+    subtitle: b.subtitle,
+    imageUrl: b.imageUrl,
+    ctaLabel: b.ctaLabel ?? "Learn how it works",
+    linkUrl: b.linkUrl ?? "/categories",
+  }));
+  if (slides.length === 0) {
+    slides.push({ id: "default", title: "Source directly from verified manufacturers", subtitle: "Compare MOQs and prices, message suppliers and pay with escrow-protected Secured Trading.", imageUrl: "/banners/hero-sourcing.webp", ctaLabel: "Browse categories", linkUrl: "/categories" });
+  }
 
   return (
     <>
@@ -36,37 +46,8 @@ export default async function HomePage() {
           potentialAction: { "@type": "SearchAction", target: `${absoluteUrl("/search")}?q={search_term_string}`, "query-input": "required name=search_term_string" },
         }}
       />
-      <section className="relative isolate overflow-hidden bg-ink text-paper">
-        {hero && (
-          // eslint-disable-next-line @next/next/no-img-element -- CMS-managed banner, host varies
-          <img src={hero.imageUrl} alt="" className="absolute inset-0 -z-10 h-full w-full object-cover opacity-30" />
-        )}
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:py-24">
-          <h1 className="max-w-2xl font-display text-4xl font-semibold leading-tight sm:text-5xl">
-            {hero?.title ?? "Source directly from verified manufacturers"}
-          </h1>
-          <p className="mt-4 max-w-xl text-lg text-paper/80">Compare MOQs and prices, message suppliers, and pay with escrow-protected Secured Trading.</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <ButtonLink href={hero?.linkUrl ?? "/categories"} size="lg" variant="accent">
-              Browse categories
-            </ButtonLink>
-            <ButtonLink href="/register?as=supplier" size="lg" variant="inverse">
-              Sell on Tarf
-            </ButtonLink>
-          </div>
-        </div>
-      </section>
-
-      {rest.length > 0 && (
-        <section aria-label="Promotions" className="mx-auto grid max-w-7xl gap-4 px-4 pt-8 sm:grid-cols-2 lg:grid-cols-3">
-          {rest.map((b) => (
-            <Link key={b.id} href={b.linkUrl ?? "/"} className="block overflow-hidden rounded-2xl border border-line">
-              {/* eslint-disable-next-line @next/next/no-img-element -- CMS-managed banner */}
-              <img src={b.imageUrl} alt={b.title ?? ""} className="h-36 w-full object-cover" />
-            </Link>
-          ))}
-        </section>
-      )}
+      <h1 className="sr-only">Tarf: source directly from verified manufacturers and suppliers</h1>
+      <HeroSlider slides={slides} />
 
       <section className="mx-auto max-w-7xl px-4 pt-12" aria-labelledby="cats">
         <div className="flex items-end justify-between">

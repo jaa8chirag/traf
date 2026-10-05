@@ -1298,6 +1298,8 @@ model Banner {
   id        String          @id @default(cuid())
   placement BannerPlacement
   title     String?
+  subtitle  String?
+  ctaLabel  String?
   imageUrl  String
   linkUrl   String?
   sortOrder Int             @default(0)
