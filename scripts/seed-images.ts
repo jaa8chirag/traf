@@ -1,7 +1,10 @@
 // Generates illustrated product photos + supplier logos for the seed data and uploads them to
 // object storage (no external image downloads). Idempotent: products that already have media are skipped.
-//   npm run seed:images
+//   npm run seed:images                      (uploads to object storage)
+//   DEMO_MEDIA_DIR=public/demo-media npm run seed:images   (writes static files instead)
 import "dotenv/config";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { PrismaPg } from "@prisma/adapter-pg";
 import sharp from "sharp";
@@ -93,7 +96,14 @@ const KIND_BY_CATEGORY: Record<string, Kind> = {
   "vitrified-tiles": "tile", "t-shirts": "tshirt", "fresh-fruit": "mango", "spices-and-condiments": "spice",
 };
 
+/** DEMO_MEDIA_DIR=public/demo-media writes files instead of uploading (static demo hosting, no S3 needed). */
 async function put(key: string, body: Buffer, contentType: string): Promise<void> {
+  if (process.env.DEMO_MEDIA_DIR) {
+    const file = join(process.env.DEMO_MEDIA_DIR, key);
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, body);
+    return;
+  }
   await s3.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: body, ContentType: contentType }));
 }
 

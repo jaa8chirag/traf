@@ -59,6 +59,7 @@ async function ensureSuppliers(): Promise<Map<string, string>> {
       where: { slug: s.slug },
       update: { tier: s.tier, audited: s.audited },
       create: {
+        id: `co_${s.slug}`, // stable id => stable media keys across databases
         slug: s.slug, name: s.name, ownerId: user.id, businessType: s.type, rd: s.rd, city: s.city, province: s.province, status: CompanyStatus.VERIFIED, verifiedAt: new Date(),
         tier: s.tier, audited: s.audited, yearFounded: between(1995, 2018), description: `${s.name} is a ${s.type.replace("_", " ").toLowerCase()} based in ${s.city}, ${s.province}, serving buyers worldwide.`,
         ratingAvg: (3.8 + rnd() * 1.1).toFixed(2), ratingCount: between(8, 140), supplierProfile: { create: {} },

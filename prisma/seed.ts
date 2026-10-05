@@ -181,6 +181,7 @@ async function seedDemo(cats: Map<string, string>, plans: Map<PlanTier, string>,
       where: { slug: s.slug },
       update: {},
       create: {
+        id: `co_${s.slug}`, // stable id => stable media keys across databases
         slug: s.slug,
         name: s.name,
         ownerId: user.id,
