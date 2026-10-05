@@ -14,6 +14,7 @@ npm install                     # also runs `prisma generate`
 npm run db:migrate              # apply migrations
 npm run db:seed                 # categories, attribute templates, plans, roles/permissions, demo suppliers, buyer, super-admin
 npm run storage:init            # create the MinIO bucket + make public/* readable
+npm run seed:images             # generate product photos + supplier logos for the demo data
 npm run dev
 ```
 

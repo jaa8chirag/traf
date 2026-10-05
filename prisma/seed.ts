@@ -212,7 +212,7 @@ async function seedDemo(cats: Map<string, string>, plans: Map<PlanTier, string>,
       if (!categoryId) throw new Error(`Seed category missing: ${p.category}`);
       await prisma.product.upsert({
         where: { slug: `${s.slug}-${slugify(p.title)}` },
-        update: {},
+        update: { categoryId }, // re-point if the category was re-imported/renamed
         create: {
           slug: `${s.slug}-${slugify(p.title)}`,
           companyId: company.id,

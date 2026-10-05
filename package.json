@@ -17,7 +17,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "storage:init": "tsx scripts/storage-init.ts",
-    "taxonomy:import": "tsx scripts/import-categories.ts"
+    "taxonomy:import": "tsx scripts/import-categories.ts",
+    "seed:images": "tsx scripts/seed-images.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1146.0",
