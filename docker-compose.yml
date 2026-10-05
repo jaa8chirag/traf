@@ -16,11 +16,11 @@ services:
     ports: ["7700:7700"]
     volumes: [meilidata:/meili_data]
   minio:
-    image: minio/minio
-    command: server /data --console-address ":9001"
-    environment: { MINIO_ROOT_USER: tarfminio, MINIO_ROOT_PASSWORD: tarfminio123 }
+    # Official minio/minio images were removed from Docker Hub; bitnamilegacy is a maintained mirror for local dev.
+    image: bitnamilegacy/minio:latest
+    environment: { MINIO_ROOT_USER: tarfminio, MINIO_ROOT_PASSWORD: tarfminio123, MINIO_DEFAULT_BUCKETS: tarf-uploads }
     ports: ["9000:9000", "9001:9001"]
-    volumes: [miniodata:/data]
+    volumes: [miniodata:/bitnami/minio/data]
   mailpit:
     image: axllent/mailpit
     ports: ["1025:1025", "8025:8025"]

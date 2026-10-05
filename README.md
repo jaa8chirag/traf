@@ -12,7 +12,8 @@ cp .env.example .env            # and .env.local; set AUTH_SECRET to a random 32
 docker compose up -d            # Postgres :5433, Redis :6380, Meilisearch :7700, MinIO :9000, Mailpit :8025
 npm install                     # also runs `prisma generate`
 npm run db:migrate              # apply migrations
-npm run db:seed                 # categories, plans, roles/permissions, demo suppliers, buyer, super-admin
+npm run db:seed                 # categories, attribute templates, plans, roles/permissions, demo suppliers, buyer, super-admin
+npm run storage:init            # create the MinIO bucket + make public/* readable
 npm run dev
 ```
 
@@ -26,6 +27,16 @@ Sign-in is email + one-time code. In development the code arrives in **Mailpit**
 
 Google sign-in is enabled when `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are set.
 
+## Category tree import
+
+```bash
+npm run taxonomy:import -- tree.csv --dry-run   # validate only
+npm run taxonomy:import -- tree.csv --prune     # apply; --prune retires categories not in the file
+```
+
+CSV columns `l1,l2,l3,l4` (names; optional translations as `l1_hi`, `l2_zh`, …) or a nested JSON `[{ "name", "nameI18n", "children": [] }]`.
+The importer is idempotent, keyed by the slug path, and disambiguates repeated names (e.g. several "Others") by prefixing the parent.
+
 ## Scripts
 
 | Command | What it does |
@@ -33,6 +44,7 @@ Google sign-in is enabled when `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are s
 | `npm run dev` / `build` / `start` | Next.js |
 | `npm run lint` · `npm run typecheck` | ESLint (incl. module-boundary rules) · `tsc --noEmit` |
 | `npm test` | Vitest (unit + DB integration; needs the compose Postgres, migrated and seeded) |
+| `npm run storage:init` / `taxonomy:import` | MinIO bucket setup · category importer |
 | `npm run db:migrate` / `db:seed` / `db:studio` / `db:validate` | Prisma |
 
 ## Layout

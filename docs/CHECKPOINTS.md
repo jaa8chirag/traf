@@ -21,7 +21,7 @@ Legend: **Scope** = what is built. **Done when** = acceptance criteria. **Not in
 **Done when:** seeded super-admin signs in at `/admin/login` and sees an empty dashboard; buyer and supplier can register/sign in and land on their (stub) panels; unauthorized access to another panel is blocked with tests; `docker compose up` + `npm run db:migrate && npm run db:seed` works from a clean clone.
 **Not in scope:** any catalog/search UI.
 
-## CP-2 — Catalog core
+## CP-2 — Catalog core  *(done)*
 **Scope**
 - **Taxonomy importer** (`scripts/import-categories`): CSV/JSON of L1–L4 → `Category` (idempotent, computes `path/level/isLeaf`, reports orphans/dupes); run with the real tree when supplied. Seed ≥ L1+L2+main L3.
 - Attribute template editor data layer + admin UI (per category, inheritable from parent).

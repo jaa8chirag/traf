@@ -3,21 +3,16 @@
 // CP-2 replaces it with the real importer.
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, PlanTier, BusinessType, RoleScope, ProductStatus, CompanyStatus } from "../src/generated/prisma/client";
+import { applyTaxonomy } from "../src/modules/catalog/taxonomy-apply";
+import { planTaxonomy, slugify, type TaxonomyNode } from "../src/modules/catalog/taxonomy";
+import { PrismaClient, type AttributeType, PlanTier, BusinessType, RoleScope, ProductStatus, CompanyStatus } from "../src/generated/prisma/client";
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
 });
 
-const slugify = (s: string): string =>
-  s.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-interface Node {
-  name: string;
-  children?: Node[];
-}
-
-const tree: Node[] = [
+const tree: TaxonomyNode[] = [
   { name: "Agriculture & Food", children: [{ name: "Fruits & Vegetables", children: [{ name: "Fresh Fruit" }, { name: "Dried Fruit" }] }, { name: "Spices & Condiments" }] },
   { name: "Apparel & Accessories", children: [{ name: "Men's Clothing", children: [{ name: "T-Shirts" }, { name: "Jackets" }] }, { name: "Women's Clothing" }] },
   { name: "Auto & Motorcycle Parts" },
@@ -48,22 +43,36 @@ const tree: Node[] = [
 ];
 
 async function seedCategories(): Promise<Map<string, string>> {
-  const ids = new Map<string, string>(); // slug -> id
-  const walk = async (nodes: Node[], parentId: string | null, parentPath: string, level: number): Promise<void> => {
-    for (const [i, n] of nodes.entries()) {
-      const slug = slugify(n.name);
-      const path = parentPath ? `${parentPath}/${slug}` : slug;
-      const row = await prisma.category.upsert({
-        where: { slug },
-        update: { name: n.name, parentId, level, path, sortOrder: i, isLeaf: !n.children?.length },
-        create: { name: n.name, slug, parentId, level, path, sortOrder: i, isLeaf: !n.children?.length },
-      });
-      ids.set(slug, row.id);
-      if (n.children) await walk(n.children, row.id, path, level + 1);
-    }
-  };
-  await walk(tree, null, "", 1);
-  return ids;
+  const plan = planTaxonomy(tree);
+  await applyTaxonomy(prisma, plan, { prune: true });
+  const rows = await prisma.category.findMany({ where: { isActive: true }, select: { slug: true, id: true } });
+  return new Map(rows.map((r) => [r.slug, r.id])); // slug -> id
+}
+
+
+async function seedAttributes(cats: Map<string, string>): Promise<void> {
+  const opt = (...v: string[]) => v.map((x) => ({ value: x.toLowerCase().replace(/\s+/g, "-"), label: x }));
+  const defs: Array<{ cat: string; key: string; label: string; type: AttributeType; unit?: string; options?: { value: string; label: string }[]; isRequired?: boolean; isFilterable?: boolean; sortOrder: number }> = [
+    { cat: "mobile-accessories", key: "brand", label: "Brand", type: "TEXT", sortOrder: 1 },
+    { cat: "mobile-accessories", key: "color", label: "Colour", type: "SELECT", options: opt("Black", "White", "Silver", "Blue"), isFilterable: true, sortOrder: 2 },
+    { cat: "chargers", key: "wattage", label: "Output power", type: "NUMBER", unit: "W", isRequired: true, isFilterable: true, sortOrder: 10 },
+    { cat: "chargers", key: "ports", label: "Ports", type: "MULTI_SELECT", options: opt("USB-A", "USB-C"), isFilterable: true, sortOrder: 11 },
+    { cat: "chargers", key: "gan", label: "GaN technology", type: "BOOLEAN", isFilterable: true, sortOrder: 12 },
+    { cat: "tiles-and-flooring", key: "finish", label: "Surface finish", type: "SELECT", options: opt("Glossy", "Matt", "Polished", "Rustic"), isFilterable: true, sortOrder: 1 },
+    { cat: "ceramic-tiles", key: "size", label: "Size", type: "SELECT", options: opt("300x600 mm", "600x600 mm", "800x800 mm"), isRequired: true, isFilterable: true, sortOrder: 10 },
+    { cat: "ceramic-tiles", key: "thickness", label: "Thickness", type: "NUMBER", unit: "mm", sortOrder: 11 },
+  ];
+  for (const d of defs) {
+    const categoryId = cats.get(d.cat);
+    if (!categoryId) throw new Error(`Seed attribute category missing: ${d.cat}`);
+    const { cat: _cat, key, ...rest } = d;
+    void _cat;
+    await prisma.attributeDefinition.upsert({
+      where: { categoryId_key: { categoryId, key } },
+      update: {},
+      create: { categoryId, key, ...rest, options: rest.options ?? undefined },
+    });
+  }
 }
 
 async function seedAccess(): Promise<{ superAdminRoleId: string; ownerRoleId: string }> {
@@ -83,11 +92,11 @@ async function seedAccess(): Promise<{ superAdminRoleId: string; ownerRoleId: st
     out.set(r.key, row.id);
   }
   const grants: Record<string, string[]> = {
-    super_admin: ["admin.access", "supplier.verify", "product.moderate", "rfq.review", "review.moderate", "order.view", "order.release_escrow", "dispute.resolve", "plan.manage", "report.view", "cms.publish", "support.reply", "staff.manage"],
+    super_admin: ["admin.access", "supplier.verify", "product.moderate", "rfq.review", "review.moderate", "order.view", "order.release_escrow", "dispute.resolve", "plan.manage", "report.view", "cms.publish", "support.reply", "staff.manage", "category.manage"],
     verification: ["admin.access", "supplier.verify", "product.moderate", "rfq.review", "review.moderate"],
     finance: ["admin.access", "order.view", "order.release_escrow", "dispute.resolve", "plan.manage", "report.view"],
     support: ["admin.access", "support.reply", "order.view"],
-    content: ["admin.access", "cms.publish", "product.moderate"],
+    content: ["admin.access", "cms.publish", "product.moderate", "category.manage"],
     supplier_owner: ["company.manage", "product.manage", "inquiry.reply", "order.manage", "team.manage", "billing.manage"],
     supplier_sales: ["inquiry.reply", "order.manage"],
     supplier_product_manager: ["product.manage"],
@@ -250,6 +259,7 @@ async function seedSuperAdmin(superAdminRoleId: string): Promise<void> {
 
 async function main(): Promise<void> {
   const cats = await seedCategories();
+  await seedAttributes(cats);
   const { superAdminRoleId, ownerRoleId } = await seedAccess();
   const plans = await seedPlansAndBadges();
   await seedDemo(cats, plans, ownerRoleId);

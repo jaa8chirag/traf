@@ -1,7 +1,8 @@
 export interface PresignUploadInput {
   key: string;
   contentType: string;
-  maxBytes: number;
+  /** Exact size; it is signed into the URL so the upload cannot exceed what was validated. */
+  sizeBytes: number;
 }
 
 export interface StorageProvider {
@@ -9,5 +10,7 @@ export interface StorageProvider {
   publicUrl(key: string): string;
   /** For private documents (licences, audit reports). */
   signedGetUrl(key: string, ttlSec: number): Promise<string>;
+  /** True when the object exists (used to verify a client-side upload actually happened). */
+  exists(key: string): Promise<boolean>;
   delete(key: string): Promise<void>;
 }

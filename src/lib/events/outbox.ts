@@ -4,7 +4,11 @@ export type DomainEvent =
   | "user.registered"
   | "supplier.submitted"
   | "supplier.verified"
-  | "supplier.rejected";
+  | "supplier.rejected"
+  | "product.submitted"
+  | "product.approved"
+  | "product.rejected"
+  | "product.updated";
 // Further events are added per checkpoint (see docs/ARCHITECTURE.md §8).
 
 /** Write an event in the SAME transaction as the state change (transactional outbox). */

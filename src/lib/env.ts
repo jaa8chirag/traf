@@ -14,6 +14,14 @@ const schema = z.object({
   SMTP_PORT: z.coerce.number().int().default(1025),
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
+  S3_ENDPOINT: z.string().default("http://localhost:9000"),
+  S3_REGION: z.string().default("ap-south-1"),
+  S3_BUCKET: z.string().default("tarf-uploads"),
+  S3_ACCESS_KEY_ID: z.string().default("tarfminio"),
+  S3_SECRET_ACCESS_KEY: z.string().default("tarfminio123"),
+  S3_FORCE_PATH_STYLE: z.enum(["true", "false"]).default("true"),
+  NEXT_PUBLIC_CDN_URL: z.string().optional(),
+  UPLOAD_MAX_MB: z.coerce.number().positive().default(25),
   EMAIL_FROM: z.string().default("Tarf <no-reply@tarf.example>"),
 });
 
