@@ -5,9 +5,12 @@ import { env } from "@/lib/env";
 import { emit } from "@/lib/events/outbox";
 import { notifier } from "@/lib/providers/notifier";
 import type { Access, CompanyAccess } from "./rbac";
+import { isDemoEmail, isDemoLogin, type DemoConfig } from "./demo";
 import type { Intent, OtpPurpose } from "./schemas";
 
 const OTP_REQUESTS_PER_WINDOW = 5;
+
+const demoConfig = (): DemoConfig => ({ code: env().DEMO_LOGIN_CODE, emails: env().DEMO_LOGIN_EMAILS });
 
 const hashCode = (identifier: string, code: string): string =>
   createHmac("sha256", env().AUTH_SECRET).update(`${identifier}:${code}`).digest("hex");
@@ -27,6 +30,9 @@ export type RequestOtpResult = { ok: true } | { ok: false; reason: "rate_limited
  * (no account enumeration) but only actually sends when the request is legitimate.
  */
 export async function requestOtp(email: string, purpose: OtpPurpose): Promise<RequestOtpResult> {
+  // Demo accounts use the fixed demo code: nothing to send or store.
+  if (isDemoEmail(demoConfig(), email)) return { ok: true };
+
   const windowStart = new Date(Date.now() - env().OTP_TTL_MINUTES * 60_000);
   const recent = await prisma.otpCode.count({
     where: { identifier: email, createdAt: { gte: windowStart } },
@@ -70,6 +76,8 @@ export async function verifyOtp(
   purpose: OtpPurpose,
   intent: Intent,
 ): Promise<VerifyOtpResult> {
+  if (isDemoLogin(demoConfig(), email, code)) return completeLogin(email, purpose, intent);
+
   const otp = await prisma.otpCode.findFirst({
     where: { identifier: email, purpose, consumedAt: null, expiresAt: { gt: new Date() } },
     orderBy: { createdAt: "desc" },
@@ -88,6 +96,10 @@ export async function verifyOtp(
   });
   if (claimed.count !== 1) return { ok: false, reason: "invalid" };
 
+  return completeLogin(email, purpose, intent);
+}
+
+async function completeLogin(email: string, purpose: OtpPurpose, intent: Intent): Promise<VerifyOtpResult> {
   if (purpose === "admin_login") {
     const user = await prisma.user.findUnique({ where: { email }, include: { staff: true } });
     if (!user || user.status !== "ACTIVE" || !user.staff?.active) return { ok: false, reason: "invalid" };

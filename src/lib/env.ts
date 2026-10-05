@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { defaultAppUrl } from "./app-url";
 
 const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -9,7 +10,9 @@ const schema = z.object({
   OTP_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
-  NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
+  NEXT_PUBLIC_APP_URL: z.string().url().default(defaultAppUrl()),
+  DEMO_LOGIN_CODE: z.string().min(6).optional(),
+  DEMO_LOGIN_EMAILS: z.string().optional(),
   SMTP_HOST: z.string().default("localhost"),
   SMTP_PORT: z.coerce.number().int().default(1025),
   SMTP_USER: z.string().optional(),

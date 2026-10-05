@@ -1,5 +1,7 @@
+import { defaultAppUrl } from "./app-url";
+
 /** Canonical site origin (no trailing slash). */
-export const siteUrl = (): string => (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+export const siteUrl = (): string => defaultAppUrl();
 export const absoluteUrl = (path: string): string => `${siteUrl()}${path.startsWith("/") ? path : `/${path}`}`;
 
 // "<" becomes backslash + "u003c" (still valid JSON), so data can never close the <script> tag.
