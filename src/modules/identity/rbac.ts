@@ -27,6 +27,11 @@ export function can(access: Access, permission: string, scope: PermissionScope =
   return access.staff.roleKey === "super_admin" || access.staff.permissions.has(permission);
 }
 
+/** Default landing page after sign-in, by role. */
+export function homeFor(access: Access): string {
+  return access.staff ? "/admin/dashboard" : access.companies.length ? "/supplier/dashboard" : "/buyer/dashboard";
+}
+
 export function isStaff(access: Access): boolean {
   return access.staff !== null;
 }

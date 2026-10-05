@@ -7,11 +7,13 @@ import {
   codeSchema,
   createSession,
   destroySession,
+  homeFor,
   emailSchema,
   intentSchema,
   purposeSchema,
   readSessionToken,
   requestOtp,
+  sessionFromToken,
   setSessionCookie,
   verifyOtp,
   type Intent,
@@ -67,7 +69,8 @@ export async function verifyCodeAction(_prev: AuthFormState, formData: FormData)
   await setSessionCookie(token, expiresAt);
 
   if (purpose === "admin_login") redirect("/admin/dashboard");
-  redirect(safeNext(formData.get("next")) ?? (intent === "supplier" ? "/supplier/dashboard" : "/buyer/dashboard"));
+  const session = await sessionFromToken(token);
+  redirect(safeNext(formData.get("next")) ?? (session ? homeFor(session.access) : "/buyer/dashboard"));
 }
 
 export async function logoutAction(): Promise<void> {

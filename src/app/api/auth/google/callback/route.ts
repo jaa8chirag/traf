@@ -2,8 +2,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import {
   completeGoogleLogin,
   createSession,
+  homeFor,
   googleEnabled,
   intentSchema,
+  sessionFromToken,
   setSessionCookie,
 } from "@/modules/identity";
 import { safeNext } from "@/lib/safe-next";
@@ -30,7 +32,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   await setSessionCookie(token, expiresAt);
 
   const next = safeNext(decodeURIComponent(nextRaw ?? ""));
-  const res = NextResponse.redirect(new URL(next ?? (intent === "supplier" ? "/supplier/dashboard" : "/buyer/dashboard"), request.url));
+  const session = await sessionFromToken(token);
+  const res = NextResponse.redirect(new URL(next ?? (session ? homeFor(session.access) : "/buyer/dashboard"), request.url));
   res.cookies.delete(STATE_COOKIE);
   return res;
 }
